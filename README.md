@@ -13,5 +13,5 @@ Run unitest/pytest autodiscovery. Otherwise test_*.py files.
 
 ### Companion Paper
 TBD (waiting submission results).
-This is a release repo, for more research oriented version (including experiments), see:
-TBD
+
+This is a release repo, for more research oriented version (including experiments), see: https://github.com/karazijal/automatic_xcnn_topologies

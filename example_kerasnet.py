@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG, filename='example.log')  # Will put log
 
 import keras.backend as K
 input_shape = (3, 32, 32)
-pr_axis = 1  # This is the "chanel axis" or here principal axis. We will seperate (and put back) modalities along this.
+pr_axis = 1  # This is the "chanel axis" or here principal axis. We will separate (and put back) modalities along this.
 if K.image_dim_ordering() == 'tf':
     input_shape = (32, 32, 3)
     pr_axis = 3
@@ -23,7 +23,7 @@ if K.image_dim_ordering() == 'tf':
 
 # Prepare the data
 
-p = 1.  # Use full dataset (i.e. retain 100% per-class examples
+p = 1.  # Use full dataset (i.e. retain 100% per-class examples)
 use_c10 = True  # Let's use CIFAR-10, set to false for 100
 
 # get_cifar utility will perform linear transform into YUV space
@@ -37,7 +37,7 @@ blueprint_model = get_kerasnet(nb_classes, input_shape, pr_axis)  # get KerasNet
 # Xsertion start
 
 # Xsertion understands specification of modalities as "input model" where outputs are modalities.
-# This model is not touched by Xsertion, only its ouputs are used, feel free to go crazy here.
+# This model is not touched by Xsertion, only its outputs are used, feel free to go crazy here.
 # However you define the input to this model, its inputs has to match the input data that's passed to Xsertion (Duh).
 inp = Input(shape=input_shape)
 if K.image_dim_ordering() == 'tf':
@@ -53,17 +53,17 @@ input_model = Model(input=inp, output=[lb1, lb2, lb3])
 alpha = 1  # alpha hyper
 beta = 2  # beta hyper
 builder = XCNNBuilder(blueprint_model, input_model, alpha=alpha, beta=beta)
-# create an XCNNBuilder, Xsertion will go crazy tearing apart blueprint_model and tranformaing/analysing it for internal
+# create an XCNNBuilder, Xsertion will go crazy tearing apart blueprint_model and transforming/analysing it for internal
 # use. Not considering training/data processing this is the most time consuming step.
 
 builder.set_xspot_strategy(strategy='after_pooling')  # set after_pooling heuristic to be used for placing connections
-# Alternativelly, go with resnet for branching/merging topologies. Or just specify layernames if you have exact idea
+# Alternatively, go with 'resnet' for branching/merging topologies. Or just specify layernames if you have exact idea
 # where you want connections.
 
 builder.set_xcons(use_bn=False, activation='relu', bias=False)  # Pass whatever keywords you could pass to Convolution,
 # to customise the connection/adjust it for your model. Here just turning off bias as an example).
-# Two special arguments are available, use_bn, which will insert approapriate BatchNormalistion along the connection.
-# Alternativelly, use model_function to specify a function that returns a connection model (similar to input model)
+# Two special arguments are available, use_bn, which will insert appropriate BatchNormalistion along the connection.
+# Alternatively, use model_function to specify a function that returns a connection model (similar to input model)
 # to customise connections. It's signiture is (nb_filter, inbount_name=None, name=None)->Model. nb_filter will be set
 # to what Xsertion thinks number of filters along this connections should be.
 
@@ -89,17 +89,18 @@ xcnn_model = builder.build()  # It will use cached measures to quickly give anot
 # Feeling like it could be better?
 # Not sure if certain pairs of modalities are even sensible?
 # Try
-xcnn2_model = builder.build_scaled_double_xcon()  # This will use another round of measures between pairs of modilites.
-# Though it should be noted, we did not observe much gain when using this methodology. Instead consider,
+xcnn2_model = builder.build_scaled_double_xcon()  # This will use another round of measures between pairs of modalities.
 # Note xcnn2_model is not trained.
+# Though it should be noted, we did not observe much gain when using this methodology. Instead consider,
+
 
 xcnn_iter_model = builder.build_iter(.1, Nasterov=True, iter_max=15, rep=1)  # This will commence combined learning
-# to produce model. First parameter is initial learning rate. Nasterov controls whether nasterov accelation is applied
-# to adaptive momentum. Building process is too noisy and steps seem to be not sensible. Try adjusting learning rate.
+# to produce model. First parameter is initial learning rate. Nasterov controls whether Nasterov acceleration is applied
+# to adaptive momentum. If building process is too noisy and steps seem to be not sensible. Try adjusting learning rate.
 # If push comes to shove, increase reps (rep).
 
-# This produces trained model. But only on 80% training data that was supplied. For fair comparison, it shoudl finish
-# training.
+# This produces trained model. But only on 80% training data that was supplied. For fair comparison, consider finishing
+# training using full training set.
 
 # Train.
 
